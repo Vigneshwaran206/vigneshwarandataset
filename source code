@@ -1,0 +1,170 @@
+import pandas as pd
+
+# Load the dataset
+file_path = '/content/AirQualityUCI (2).csv'
+data = pd.read_csv(file_path, sep=';')  # Adjusting the separator as per the dataset format
+data.head()# General information about the dataset
+data.info()
+
+# Summary statistics
+data.describe()
+
+# Checking the first few rows
+data.head()# Checking for missing values
+missing_values = data.isnull().sum()
+
+# Checking for duplicates
+duplicates = data.duplicated().sum()
+
+missing_values, duplicatesimport matplotlib.pyplot as plt
+import seaborn as sns
+
+# Visualizing the distribution of some features
+plt.figure(figsize=(10, 6))
+sns.histplot(data['CO(GT)'], kde=True)
+plt.title('CO (GT) Distribution')
+plt.show()
+# Let's assume 'CO(GT)' is the target and the rest are features
+X = data.drop(columns=['CO(GT)'])
+y = data['CO(GT)'] 
+# Example: Convert categorical columns (if any) to numerical
+X = pd.get_dummies(X, drop_first=True)
+# One-hot encoding for categorical columns (if applicable)
+X = pd.get_dummies(X, drop_first=True)
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+from sklearn.model_selection import train_test_split
+
+# Splitting the data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+# Initializing and training the model
+model = LinearRegression()
+# Now X_train and y_train should be free of NaNs
+model.fit(X_train, y_train)
+
+print("\nModel trained successfully!")
+
+# Continue with the rest of your code (Streamlit, Gradio interfaces)
+# Ensure the input data for prediction in Streamlit/Gradio is processed
+# using the same get_dummies, scaling, and NaN handling logic applied to training data.
+# This requires careful handling of single input samples to match the training data's
+# feature set and scaling.
+
+# %%
+# The following code for Streamlit and Gradio would need adjustments
+# to correctly preprocess a single input sample to match the training data
+# preprocessing steps (get_dummies, scaling). This is a non-trivial task
+# for single-sample prediction interfaces and would require saving the
+# preprocessing steps or fitting them on a representative sample during prediction.
+
+# !pip install streamlit
+# import streamlit as st
+#
+# # Streamlit interface for input
+# st.title("Air Quality Prediction App")
+# new_input = st.text_input("Enter input features (comma-separated):")
+#
+#
+# # Predict and display the result
+# if new_input:
+#     # Need to preprocess new_input here to match X_train format and scaling
+#     # This requires significant changes to handle single input samples correctly
+#     try:
+#         # Example (simplified - requires proper implementation):
+#         input_values = [float(x.strip()) for x in new_input.split(',')]
+#         # This needs to be converted into a DataFrame with the same columns as X
+#         # and then get_dummies and scaling applied.
+#         # For now, this part is commented out as it requires more complex handling.
+#         # new_input_scaled = scaler.transform([input_values])
+#         # prediction = model.predict(new_input_scaled)
+#         # st.write(f"Predicted CO(GT): {prediction[0]}")
+#         st.write("Input processing for prediction not fully implemented yet.")
+#     except ValueError:
+#         st.write("Please enter numerical values separated by commas.")
+
+
+# %%
+# def predict_air_quality(input_data):
+#     # Similar issues with processing single input data apply here
+#     # input_data_scaled = scaler.transform([input_data])
+#     # prediction = model.predict(input_data_scaled)
+#     # return prediction[0]
+#     return "Prediction function not fully implemented yet for single inputs."
+#
+# # %%
+# !pip install gradio
+#
+# import gradio as gr
+#
+# def gradio_predict(input_data):
+#      # Similar issues with processing single input data apply here
+#     # input_data_scaled = scaler.transform([input_data])
+#     # prediction = model.predict(input_data_scaled)
+#     # return prediction[0]
+#      return "Prediction function not fully implemented yet for single inputs."
+#
+# # Creating the Gradio interface
+# # interface = gr.Interface(fn=gradio_predict, inputs="text", outputs="text")
+# # interface.launch()
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Predictions
+y_pred = model.predict(X_test)
+
+# Evaluation
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+mse, r2
+# Example: Make a prediction for a new input
+# Replace the placeholders with actual numerical input values corresponding to your features
+# The number of values should match the number of features in X_train
+# You need to know the order of features after preprocessing (get_dummies, etc.)
+# For demonstration, let's provide an example input with 77 features to match the scaler.
+# You will need to replace these example values with the actual feature values for your new input.
+# Note: The actual column names and their order after get_dummies would be needed for a real-world scenario.
+# This is just to make the code run without the ValueError.
+new_input = [[0] * 77] # Creating a list with 77 placeholder values (e.g., zeros)
+
+# Convert the list to a NumPy array or DataFrame if needed, though scaler handles lists of lists
+# new_input_array = np.array(new_input)
+
+new_input_scaled = scaler.transform(new_input)
+prediction = model.predict(new_input_scaled)
+prediction
+# Convert prediction to DataFrame
+prediction_df = pd.DataFrame(prediction, columns=['Predicted CO(GT)'])
+prediction_df
+# Example: Predict a grade or final score
+# Use the scaled new input data (new_input_scaled) for prediction
+final_grade_prediction = model.predict(new_input_scaled)
+pip install streamlit
+import streamlit as st
+
+# Streamlit interface for input
+st.title("Air Quality Prediction App")
+new_input = st.text_input("Enter input features (comma-separated):")
+
+
+# Predict and display the result
+if new_input:
+    new_input_scaled = scaler.transform([new_input])
+    prediction = model.predict(new_input_scaled)
+    st.write(f"Predicted CO(GT): {prediction[0]}")
+def predict_air_quality(input_data):
+    input_data_scaled = scaler.transform([input_data])
+    prediction = model.predict(input_data_scaled)
+    return prediction[0]
+pip install gradio
+import gradio as gr
+
+def gradio_predict(input_data):
+    input_data_scaled = scaler.transform([input_data])
+    prediction = model.predict(input_data_scaled)
+    return prediction[0]
+
+# Creating the Gradio interface
+interface = gr.Interface(fn=gradio_predict, inputs="text", outputs="text")
+interface.launch()
